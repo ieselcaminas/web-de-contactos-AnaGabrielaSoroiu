@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Contacto;
+use App\Entity\Provincia;
 use App\Repository\ContactoRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,7 +52,7 @@ final class PageController extends AbstractController {
         return $this->render('inicio.html.twig');
     }
 
-    #[Route('/contacto/{nombre?Juan Pérez}', name: 'ficha contacto')]
+    #[Route('/contacto/{nombre?Ana López}', name: 'ficha contacto')]
     public function ficha(ManagerRegistry $doctrine, $nombre): Response {
         //return new Response("Datos del contacto con código $codigo");
         /*$resultado = ($this->contactos[$codigo] ?? null);
@@ -122,6 +123,46 @@ final class PageController extends AbstractController {
             return $this->render('ficha_contacto.html.twig', 
             ['contacto' => null]);
         }
+    }
+
+    #[Route('/contacto/insertarConProvincia', name: 'insertar provincia')]
+    public function insertarProvincia(ManagerRegistry $doctrine): Response{
+        $entityManager = $doctrine->getManager();
+        $provincia = new Provincia();
+        $provincia->setNombre("Valencia");
+        
+        $contacto = new Contacto();
+        $contacto->setNombre("Sara, Fatima Sara");
+        $contacto->setTelefono("10101010100");
+        $contacto->setEmail("sara@sara.es");
+        $contacto->setProvincia($provincia);
+
+        $entityManager->persist($provincia);
+        $entityManager->persist($contacto);
+
+        $entityManager->flush();
+        return $this->render('ficha_contacto.html.twig',
+        ['contacto' => $contacto]);
+    }
+
+    #[Route('/contacto/insertarSinProvincia', name: 'insertar provincia')]
+    public function insertarSinProvincia(ManagerRegistry $doctrine): Response{
+        $entityManager = $doctrine->getManager();
+        $repositorio = $doctrine->getRepository(Provincia::class);
+
+        $provincia = $repositorio->findOneBy(["nombre" => "Valencia"]);
+        
+        $contacto = new Contacto();
+        $contacto->setNombre("Sara, Fatima Sara sin provincia");
+        $contacto->setTelefono("1010101010");
+        $contacto->setEmail("sara@sarasin.es");
+        $contacto->setProvincia($provincia);
+
+        $entityManager->persist($contacto);
+
+        $entityManager->flush();
+        return $this->render('ficha_contacto.html.twig',
+        ['contacto' => $contacto]);
     }
 }
  
