@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Repository\ContactoRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -22,9 +21,20 @@ final class PageController extends AbstractController {
         9 => ["nombre" => "Nora Jover", "telefono" => "54565859", "email" => "norajover@ieselcaminas.org"]
     ];
     
+    #[Route('/index', name: 'index')]
+    public function index() : Response {
+        return $this->render('login/inicio.html.twig');
+    }
+
+
     //Al haberle puesto una provincia, ya nos dará error todo el rato
      #[Route('/contacto/insertar', name: 'insertar')]
         public function insertar(ManagerRegistry $doctrine) {
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+
         $entityManager = $doctrine->getManager();
         foreach($this->contactos as $c){
             $contacto = new Contacto();
@@ -42,8 +52,17 @@ final class PageController extends AbstractController {
     }
 
     #[Route('/', name: 'inicio')]
-    public function inicio(): Response {
-        return $this->render('inicio.html.twig');
+    public function inicio(ManagerRegistry $doctrine): Response {
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+
+        $repositorio = $doctrine->getRepository(Contacto::class);
+        $contactos = $repositorio->findAll();
+        
+        return $this->render('inicio.html.twig', 
+        ['contactos' => $contactos]);
     }
 
     #[Route('/contacto/{codigo?1}', name: 'ficha_contacto',
@@ -65,6 +84,11 @@ final class PageController extends AbstractController {
         $resultado = ($this->contactos[$codigo] ?? null);
         return $this->render('ficha_contacto.html.twig', ['contacto' => $resultado]);*/
 
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+
         $repositorio = $doctrine->getRepository(Contacto::class);
         $contacto = $repositorio->find($codigo);
 
@@ -82,6 +106,11 @@ final class PageController extends AbstractController {
 
     #[Route('/contacto/update/{telefono}/{nombre}', name: 'modificar_contacto')]
     public function update(ManagerRegistry $doctrine, $nombre, $telefono): Response {
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+
         $entityManager = $doctrine->getManager();
         $repositorio = $doctrine->getRepository(Contacto::class);
         $contacto = $repositorio->find($nombre); 
@@ -103,6 +132,11 @@ final class PageController extends AbstractController {
 
     #[Route('/contacto/delete/{codigo}', name: 'eliminar_contacto')]
     public function delete(ManagerRegistry $doctrine, $codigo): Response{
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+
         $entityManager = $doctrine->getManager();
         $repositorio = $doctrine->getRepository(Contacto::class);
         $contacto = $repositorio->find($codigo);
@@ -122,6 +156,11 @@ final class PageController extends AbstractController {
 
     #[Route('/contacto/insertarConProvincia', name: 'insertar_provincia')]
     public function insertarProvincia(ManagerRegistry $doctrine): Response{
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+        
         $entityManager = $doctrine->getManager();
         $provincia = new Provincia();
         $provincia->setNombre("Valencia");
@@ -142,6 +181,11 @@ final class PageController extends AbstractController {
 
     #[Route('/contacto/insertarSinProvincia', name: 'insertar_provincia')]
     public function insertarSinProvincia(ManagerRegistry $doctrine): Response{
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+        
         $entityManager = $doctrine->getManager();
         $repositorio = $doctrine->getRepository(Provincia::class);
 
@@ -162,6 +206,11 @@ final class PageController extends AbstractController {
 
     #[Route('/contacto/nuevo', name: 'nuevo')]
     public function nuevo(ManagerRegistry $doctrine, Request $request) {
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+        
         $contacto = new Contacto();
         $formulario = $this->createForm(ContactoType::class, $contacto);
         $formulario-> handleRequest($request);
@@ -182,6 +231,11 @@ final class PageController extends AbstractController {
 
     #[Route('/contacto/editar/{codigo}', name: 'editar', requirements:["codigo" => "\d+"])]
     public function editar(ManagerRegistry $doctrine, Request $request, int $codigo) {
+        //Si no está logeado, le manda a login/inicio
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('index');
+        }
+        
         $repositorio = $doctrine->getRepository(Contacto::class);
         $contacto = $repositorio->find($codigo);
         if ($contacto) {

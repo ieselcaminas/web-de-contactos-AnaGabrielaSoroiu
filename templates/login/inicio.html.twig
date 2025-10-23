@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+{% block title %}Contactos{% endblock %}
+{% block body %}
+    <h1>Bienvenido a la web</h1>
+
+	<a href="{{ path('app_login') }}" style="display:inline-block; margin-bottom:15px;">
+        <button style="padding:8px 15px; border-radius:5px; background:#d63384; color:white; border:none;">Login</button>
+    </a>
+
+    <a href="{{ path('app_register') }}" style="display:inline-block; margin-bottom:15px;">
+        <button style="padding:8px 15px; border-radius:5px; background:#d63384; color:white; border:none;">Register</button>
+    </a>
+{% endblock %}
